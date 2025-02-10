@@ -1,72 +1,85 @@
 import 'package:flutter/material.dart';
 import 'screens/daftaruser.dart';
 import 'screens/tambahuser.dart';
+import 'screens/tambahproduk.dart';
+import 'screens/produk.dart';
+import 'login.dart'; // Tambahkan impor ini
 
 class HomePage extends StatefulWidget {
   final String username;
-  final String email; // Menambahkan email
+  final String email;
 
   const HomePage({super.key, required this.username, required this.email});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  final List<Widget> _tabs = [
-    const BerandaTab(),
-    const RiwayatTab(),
-    const KeranjangTab(), // Menambahkan tab Keranjang
-  ];
+  late List<Widget> _tabs;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabs = [
+      BerandaTab(username: widget.username),
+      const ProdukPage(),
+      const KeranjangTab(),
+      const RiwayatTab(),
+    ];
+  }
 
   String _getTabTitle() {
     switch (_currentIndex) {
       case 0:
         return 'Beranda';
       case 1:
-        return 'Riwayat';
+        return 'Produk';
       case 2:
         return 'Keranjang';
+      case 3:
+        return 'Riwayat';
       default:
         return '';
     }
+  }
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  void _logout() {
+    // Logika logout di sini. Contohnya, Anda dapat membersihkan shared preferences atau token.
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()), // Ganti dengan halaman login Anda
+      (Route<dynamic> route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _getTabTitle(),
-          style: const TextStyle(fontSize: 18, color: Colors.white),
-        ),
+        title: Text(_getTabTitle(), style: const TextStyle(fontSize: 18, color: Colors.white)),
         backgroundColor: Colors.blue[900],
       ),
       body: _tabs[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _onTabTapped,
         backgroundColor: Colors.blue[900],
         selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white.withOpacity(0.6),
+        unselectedItemColor: Colors.white.withAlpha(153),
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Riwayat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Keranjang',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Produk'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Keranjang'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Riwayat'),
         ],
       ),
       drawer: Drawer(
@@ -97,31 +110,32 @@ class _HomePageState extends State<HomePage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.account_circle, color: Colors.white),
-              title: const Text('Profil', style: TextStyle(color: Colors.white)),
-              onTap: () {},
-            ),
-            ListTile(
               leading: const Icon(Icons.person_add, color: Colors.white),
               title: const Text('Tambah User', style: TextStyle(color: Colors.white)),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TambahUserPage()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const TambahUserPage()));
               },
             ),
             ListTile(
               leading: const Icon(Icons.list, color: Colors.white),
               title: const Text('Daftar User', style: TextStyle(color: Colors.white)),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DaftarUserPage()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const DaftarUserPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_box, color: Colors.white),
+              title: const Text('Tambah Produk', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const TambahProdukPage()));
               },
             ),
             const Divider(color: Colors.white),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.white),
+              title: const Text('Logout', style: TextStyle(color: Colors.white)),
+              onTap: _logout,
+            ),
           ],
         ),
       ),
@@ -130,112 +144,52 @@ class _HomePageState extends State<HomePage> {
 }
 
 class BerandaTab extends StatelessWidget {
-  const BerandaTab();
+  final String username;
+  
+  const BerandaTab({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {
-    final String username = (context.findAncestorWidgetOfExactType<HomePage>() as HomePage).username;
-
     return Container(
-      width: double.infinity,
-      height: double.infinity,
       color: Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Selamat datang, $username',
-            style: const TextStyle(
-              fontSize: 24.0,
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Selamat datang, $username',
+              style: const TextStyle(fontSize: 24.0, color: Colors.black, fontWeight: FontWeight.bold),
             ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DaftarUserPage()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-            ),
-            child: const Text(
-              'Go to Daftar User',
-              style: TextStyle(fontSize: 18),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 class RiwayatTab extends StatelessWidget {
-  const RiwayatTab();
+  const RiwayatTab({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: double.infinity,
       color: Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            'Riwayat Transaksi',
-            style: TextStyle(
-              fontSize: 24.0,
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Riwayat transaksi Anda akan muncul di sini.',
-            style: TextStyle(
-              fontSize: 18.0,
-              color: Colors.black,
-            ),
-          ),
-        ],
+      child: const Center(
+        child: Text('Riwayat Transaksi', style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.black)),
       ),
     );
   }
 }
 
 class KeranjangTab extends StatelessWidget {
-  const KeranjangTab();
+  const KeranjangTab({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: double.infinity,
       color: Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            'Keranjang Belanja',
-            style: TextStyle(
-              fontSize: 24.0,
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Barang-barang yang Anda tambahkan ke keranjang akan muncul di sini.',
-            style: TextStyle(
-              fontSize: 18.0,
-              color: Colors.black,
-            ),
-          ),
-        ],
+      child: const Center(
+        child: Text('Keranjang Belanja', style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.black)),
       ),
     );
   }
