@@ -21,7 +21,6 @@ class _TambahProdukPageState extends State<TambahProdukPage> {
     final int? harga = int.tryParse(hargaController.text.trim());
     final int? stok = int.tryParse(stokController.text.trim());
 
-    // Validasi input kosong
     if (produkId.isEmpty || namaProduk.isEmpty || harga == null || stok == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Semua kolom harus diisi dengan benar!')),
@@ -29,7 +28,6 @@ class _TambahProdukPageState extends State<TambahProdukPage> {
       return;
     }
 
-    // Validasi harga dan stok harus lebih dari 0
     if (harga <= 0 || stok < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Harga harus lebih dari 0 dan stok tidak boleh negatif!')),
@@ -38,7 +36,6 @@ class _TambahProdukPageState extends State<TambahProdukPage> {
     }
 
     try {
-      // Cek apakah produkId sudah ada di database
       final List existingProduct = await supabase
           .from('produk')
           .select('produkid')
@@ -51,7 +48,6 @@ class _TambahProdukPageState extends State<TambahProdukPage> {
         return;
       }
 
-      // Simpan data ke Supabase
       await supabase.from('produk').insert({
         'produkid': produkId,
         'namaproduk': namaProduk,
@@ -63,7 +59,6 @@ class _TambahProdukPageState extends State<TambahProdukPage> {
         const SnackBar(content: Text('Produk berhasil ditambahkan!')),
       );
 
-      // Bersihkan input setelah berhasil
       produkIdController.clear();
       namaProdukController.clear();
       hargaController.clear();
@@ -78,7 +73,11 @@ class _TambahProdukPageState extends State<TambahProdukPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Input Produk')),
+      backgroundColor: Colors.white, // Background putih
+      appBar: AppBar(
+        title: const Text('Input Produk'),
+        backgroundColor: Colors.blue.shade900, // AppBar biru 900
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -103,6 +102,10 @@ class _TambahProdukPageState extends State<TambahProdukPage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue.shade900, // Tombol biru 900
+                foregroundColor: Colors.white, // Teks putih
+              ),
               onPressed: tambahProduk,
               child: const Text('Simpan Produk'),
             ),

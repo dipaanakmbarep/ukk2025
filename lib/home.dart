@@ -3,7 +3,8 @@ import 'screens/daftaruser.dart';
 import 'screens/tambahuser.dart';
 import 'screens/tambahproduk.dart';
 import 'screens/produk.dart';
-import 'login.dart'; // Tambahkan impor ini
+import 'login.dart'; 
+import 'screens/pelanggan.dart'; 
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -128,6 +129,13 @@ class HomePageState extends State<HomePage> {
               title: const Text('Tambah Produk', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const TambahProdukPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.people, color: Colors.white),
+              title: const Text('Pelanggan', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const PelangganPage()));
               },
             ),
             const Divider(color: Colors.white),
