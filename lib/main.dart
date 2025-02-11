@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login.dart';
 import 'home.dart';
-import 'screens/tambahuser.dart';
+import 'screens/user.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,7 +89,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => HomePage(username: '', email: ''), // Tidak perlu const di sini
-        '/tambahuser': (context) => const TambahUserPage(),
+        '/tambahuser': (context) => const UserPage(),
       },
     );
   }

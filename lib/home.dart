@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/daftaruser.dart';
-import 'screens/tambahuser.dart';
+import 'screens/user.dart';
 import 'screens/tambahproduk.dart';
 import 'screens/produk.dart';
 import 'login.dart'; 
@@ -112,16 +111,9 @@ class HomePageState extends State<HomePage> {
             ),
             ListTile(
               leading: const Icon(Icons.person_add, color: Colors.white),
-              title: const Text('Tambah User', style: TextStyle(color: Colors.white)),
+              title: const Text('User', style: TextStyle(color: Colors.white)),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const TambahUserPage()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.list, color: Colors.white),
-              title: const Text('Daftar User', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const DaftarUserPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const UserPage()));
               },
             ),
             ListTile(

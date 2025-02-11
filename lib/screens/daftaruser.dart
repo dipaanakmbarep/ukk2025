@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class DaftarUserPage extends StatefulWidget {
-  const DaftarUserPage({super.key});
+class DaftaUserPage extends StatefulWidget {
+  const DaftaUserPage({super.key});
 
   @override
-  DaftarUserPageState createState() => DaftarUserPageState();
+  DaftaUserPageState createState() => DaftaUserPageState();
 }
 
-class DaftarUserPageState extends State<DaftarUserPage> {
+class DaftaUserPageState extends State<DaftaUserPage> {
   final supabaseClient = Supabase.instance.client;
   List<Map<String, dynamic>> _userList = [];
 
