@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login.dart';
 import 'home.dart';
 import 'screens/user.dart';
+import 'screens/keranjang.dart'; // Pastikan file ini ada
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,16 +18,16 @@ Future<void> main() async {
         .from('users')
         .select('*')
         .limit(1);
-    print("Cek koneksi Supabase: $response");
+    debugPrint("Cek koneksi Supabase: $response");
   } catch (e) {
-    print("Error koneksi Supabase: $e");
+    debugPrint("Error koneksi Supabase: $e");
   }
 
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +38,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.brown,
         scaffoldBackgroundColor: Colors.lightBlue[50],
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black54, // Warna hitam transparan
+          backgroundColor: Colors.black54,
           iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(
             fontFamily: 'Poppins',
@@ -78,18 +79,19 @@ class MyApp extends StatelessWidget {
           ),
         ),
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          backgroundColor: Colors.black54, // Warna hitam transparan
+          backgroundColor: Colors.black54,
           selectedItemColor: Colors.brown[800],
           unselectedItemColor: Colors.grey[600],
-          selectedIconTheme: IconThemeData(size: 30),
-          unselectedIconTheme: IconThemeData(size: 24),
+          selectedIconTheme: const IconThemeData(size: 30),
+          unselectedIconTheme: const IconThemeData(size: 24),
         ),
       ),
       initialRoute: '/login',
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/home': (context) => HomePage(username: '', email: ''), // Tidak perlu const di sini
-        '/tambahuser': (context) => const UserPage(),
+        '/login': (context) => LoginScreen(), // HAPUS 'const'
+        '/home': (context) => HomePage(username: '', email: ''), // HAPUS 'const'
+        '/tambahuser': (context) => UserPage(), // HAPUS 'const'
+        '/keranjang': (context) => KeranjangPage(), // HAPUS 'const'
       },
     );
   }

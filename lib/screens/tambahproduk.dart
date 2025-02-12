@@ -14,100 +14,203 @@ class _TambahProdukPageState extends State<TambahProdukPage> {
   final TextEditingController namaProdukController = TextEditingController();
   final TextEditingController hargaController = TextEditingController();
   final TextEditingController stokController = TextEditingController();
+  String? kategori;
+  final _formKey = GlobalKey<FormState>();
+  List<Map<String, dynamic>> productList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProducts();
+  }
+
+  Future<void> fetchProducts() async {
+    final response = await supabase.from('produk').select();
+    setState(() {
+      productList = List<Map<String, dynamic>>.from(response);
+    });
+  }
 
   Future<void> tambahProduk() async {
-    final String produkId = produkIdController.text.trim();
-    final String namaProduk = namaProdukController.text.trim();
-    final int? harga = int.tryParse(hargaController.text.trim());
-    final int? stok = int.tryParse(stokController.text.trim());
+    if (_formKey.currentState!.validate()) {
+      final String produkId = produkIdController.text.trim();
+      final String namaProduk = namaProdukController.text.trim();
+      final int harga = int.parse(hargaController.text.trim());
+      final int stok = int.parse(stokController.text.trim());
 
-    if (produkId.isEmpty || namaProduk.isEmpty || harga == null || stok == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua kolom harus diisi dengan benar!')),
-      );
-      return;
-    }
+      try {
+        await supabase.from('produk').insert({
+          'produkid': produkId,
+          'namaproduk': namaProduk,
+          'harga': harga,
+          'stok': stok,
+          'kategori': kategori,
+        });
 
-    if (harga <= 0 || stok < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Harga harus lebih dari 0 dan stok tidak boleh negatif!')),
-      );
-      return;
-    }
+        fetchProducts();
+        clearForm();
 
-    try {
-      final List existingProduct = await supabase
-          .from('produk')
-          .select('produkid')
-          .eq('produkid', produkId);
-
-      if (existingProduct.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Produk ID sudah terdaftar, gunakan ID lain!')),
+          const SnackBar(content: Text('Produk berhasil ditambahkan!')),
         );
-        return;
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menambahkan produk: $error')),
+        );
       }
+    }
+  }
 
-      await supabase.from('produk').insert({
-        'produkid': produkId,
+  Future<void> updateProduk(int index, String namaProduk, int harga, int stok, String kategori) async {
+    final produk = productList[index];
+    try {
+      await supabase.from('produk').update({
         'namaproduk': namaProduk,
         'harga': harga,
         'stok': stok,
-      });
+        'kategori': kategori,
+      }).eq('produkid', produk['produkid']);
 
+      fetchProducts();
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produk berhasil ditambahkan!')),
+        const SnackBar(content: Text('Produk berhasil diperbarui!')),
       );
-
-      produkIdController.clear();
-      namaProdukController.clear();
-      hargaController.clear();
-      stokController.clear();
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menambahkan produk: $error')),
+        SnackBar(content: Text('Gagal memperbarui produk: $error')),
       );
     }
+  }
+
+  Future<void> deleteProduk(int index) async {
+    final produk = productList[index];
+    try {
+      await supabase.from('produk').delete().eq('produkid', produk['produkid']);
+      fetchProducts();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Produk berhasil dihapus!')),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menghapus produk: $error')),
+      );
+    }
+  }
+
+  void showEditDialog(int index) {
+    final produk = productList[index];
+    final TextEditingController editNamaController = TextEditingController(text: produk['namaproduk']);
+    final TextEditingController editHargaController = TextEditingController(text: produk['harga'].toString());
+    final TextEditingController editStokController = TextEditingController(text: produk['stok'].toString());
+    String? editKategori = produk['kategori'];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Produk'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: editNamaController, decoration: const InputDecoration(labelText: 'Nama Produk')),
+              TextField(controller: editHargaController, decoration: const InputDecoration(labelText: 'Harga'), keyboardType: TextInputType.number),
+              TextField(controller: editStokController, decoration: const InputDecoration(labelText: 'Stok'), keyboardType: TextInputType.number),
+              DropdownButtonFormField<String>(
+                value: editKategori,
+                decoration: const InputDecoration(labelText: 'Kategori'),
+                items: ['Makanan', 'Minuman'].map((kategori) {
+                  return DropdownMenuItem(value: kategori, child: Text(kategori));
+                }).toList(),
+                onChanged: (value) => editKategori = value,
+                validator: (value) => value == null ? 'Pilih kategori' : null,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+            ElevatedButton(
+              onPressed: () {
+                updateProduk(
+                  index,
+                  editNamaController.text.trim(),
+                  int.parse(editHargaController.text.trim()),
+                  int.parse(editStokController.text.trim()),
+                  editKategori!,
+                );
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void clearForm() {
+    produkIdController.clear();
+    namaProdukController.clear();
+    hargaController.clear();
+    stokController.clear();
+    setState(() => kategori = null);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Background putih
       appBar: AppBar(
-        title: const Text('Input Produk'),
-        backgroundColor: Colors.blue.shade900, // AppBar biru 900
+        title: const Text('Input Produk', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.blue.shade900,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: produkIdController,
-              decoration: const InputDecoration(labelText: 'Produk ID'),
-            ),
-            TextField(
-              controller: namaProdukController,
-              decoration: const InputDecoration(labelText: 'Nama Produk'),
-            ),
-            TextField(
-              controller: hargaController,
-              decoration: const InputDecoration(labelText: 'Harga'),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: stokController,
-              decoration: const InputDecoration(labelText: 'Stok'),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade900, // Tombol biru 900
-                foregroundColor: Colors.white, // Teks putih
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(controller: produkIdController, decoration: const InputDecoration(labelText: 'Produk ID'), validator: (value) => value!.isEmpty ? 'Wajib diisi' : null),
+                  TextFormField(controller: namaProdukController, decoration: const InputDecoration(labelText: 'Nama Produk'), validator: (value) => value!.isEmpty ? 'Wajib diisi' : null),
+                  TextFormField(controller: hargaController, decoration: const InputDecoration(labelText: 'Harga'), keyboardType: TextInputType.number, validator: (value) => value!.isEmpty ? 'Wajib diisi' : null),
+                  TextFormField(controller: stokController, decoration: const InputDecoration(labelText: 'Stok'), keyboardType: TextInputType.number, validator: (value) => value!.isEmpty ? 'Wajib diisi' : null),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: 'Kategori'),
+                    value: kategori,
+                    items: ['Makanan', 'Minuman'].map((kategori) {
+                      return DropdownMenuItem(value: kategori, child: Text(kategori));
+                    }).toList(),
+                    onChanged: (value) => setState(() => kategori = value),
+                    validator: (value) => value == null ? 'Pilih kategori' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: tambahProduk,
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade900),
+                    child: const Text('Tambah Produk', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
               ),
-              onPressed: tambahProduk,
-              child: const Text('Simpan Produk'),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: productList.length,
+                itemBuilder: (context, index) {
+                  final product = productList[index];
+                  return ListTile(
+                    title: Text(product['namaproduk']),
+                    subtitle: Text('Kategori: ${product['kategori']} - Harga: ${product['harga']} - Stok: ${product['stok']}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(icon: const Icon(Icons.edit), onPressed: () => showEditDialog(index)),
+                        IconButton(icon: const Icon(Icons.delete), onPressed: () => deleteProduk(index)),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),

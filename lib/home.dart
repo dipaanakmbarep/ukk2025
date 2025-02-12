@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'screens/user.dart';
 import 'screens/tambahproduk.dart';
 import 'screens/produk.dart';
-import 'login.dart'; 
-import 'screens/pelanggan.dart'; 
+import 'screens/keranjang.dart'; // Import benar
+import 'login.dart';
+import 'screens/pelanggan.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -24,8 +25,8 @@ class HomePageState extends State<HomePage> {
     super.initState();
     _tabs = [
       BerandaTab(username: widget.username),
-      const ProdukPage(),
-      const KeranjangTab(),
+       ProdukPage(),
+       KeranjangPage(), // Perbaikan: Menggunakan KeranjangPage() dari keranjang.dart
       const RiwayatTab(),
     ];
   }
@@ -52,10 +53,9 @@ class HomePageState extends State<HomePage> {
   }
 
   void _logout() {
-    // Logika logout di sini. Contohnya, Anda dapat membersihkan shared preferences atau token.
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()), // Ganti dengan halaman login Anda
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
       (Route<dynamic> route) => false,
     );
   }
@@ -118,7 +118,7 @@ class HomePageState extends State<HomePage> {
             ),
             ListTile(
               leading: const Icon(Icons.add_box, color: Colors.white),
-              title: const Text('Tambah Produk', style: TextStyle(color: Colors.white)),
+              title: const Text('Produk', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const TambahProdukPage()));
               },
@@ -128,6 +128,13 @@ class HomePageState extends State<HomePage> {
               title: const Text('Pelanggan', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const PelangganPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.shopping_cart, color: Colors.white),
+              title: const Text('Keranjang', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) =>  KeranjangPage()));
               },
             ),
             const Divider(color: Colors.white),
@@ -145,7 +152,7 @@ class HomePageState extends State<HomePage> {
 
 class BerandaTab extends StatelessWidget {
   final String username;
-  
+
   const BerandaTab({super.key, required this.username});
 
   @override
@@ -176,20 +183,6 @@ class RiwayatTab extends StatelessWidget {
       color: Colors.white,
       child: const Center(
         child: Text('Riwayat Transaksi', style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.black)),
-      ),
-    );
-  }
-}
-
-class KeranjangTab extends StatelessWidget {
-  const KeranjangTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: const Center(
-        child: Text('Keranjang Belanja', style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.black)),
       ),
     );
   }
